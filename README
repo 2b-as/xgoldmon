@@ -94,6 +94,12 @@ GSMTAP messages in Wireshark, but they currently will not be
 decoded. I hope this will be resolved soon. For the time being, use
 GSM.
 
+If everyting works, it should look a bit like the
+"screenshot-mtsms-while-in-a-call.png".
+It contains a screenshot of Wireshark that shows an S3 receiving a
+text message while in a call. (Lots of messages filtered out to show
+the more relevant messages)
+
 
 Thanks
 ======
