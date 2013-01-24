@@ -1,0 +1,102 @@
+xgoldmon
+========
+
+xgoldmon is a small tool to convert the messages output by the USB
+logging mode of phones with Intel/Infineon XGold baseband processor
+back to the GSM/UMTS radio messages sent over the air so you can watch
+them in e.g. Wireshark in realtime.
+This includes signalling for calls, SMS, USSD, paging for your and
+other phones and so on.
+
+Currently, it works for the Samsung Galaxy S3 GT-I9300 and Galaxy S2
+GT-I9100.
+
+Patches for other devices or to decode more messages are very much
+welcome!
+
+-Tobias Engel
+
+Mail: tobias@sternraute.de
+Twitter: @2b_as
+
+
+How to build
+============
+
+xgoldmon has been tested on Linux and OSX.
+
+As a prerequisite, libosmocore has to be installed. See here for
+instructions: http://bb.osmocom.org/trac/wiki/libosmocore
+(If you install it in a non-standard location please set
+PKG_CONFIG_PATH accordingly.)
+
+Then run "make" in the xgoldmon directory. An xgoldmon binary should
+be created.
+
+
+Before running xgoldmon
+=======================
+
+To enable the logging mode on the phone:
+- Go to the Phone application, enter *#9900# and set "Debug Level
+  Enabled" to "HIGH". The phone will reboot.
+- Go to the Phone application again, enter *#7284# and set "USB" to
+  "MODEM" and tap "SAVE and RESET". The phone will reboot again.
+
+When connecting the phone via USB to the computer, several new
+pseudo-tty devices should be created. The one with the second lowest
+number should be the logging port. So for example on Linux, if you
+have no other ttyACM* devices, it should be /dev/ttyACM1.
+
+xgoldmon currently does not yet set any serial parameters on the
+device, so on Linux you might have to do that yourself with something
+like
+
+  stty 115200 pass8 raw -noflsh </dev/ttyACM1
+
+
+Running xgoldmon
+================
+
+E.g.:
+
+  xgoldmon -t s3 -l /dev/ttyACM1
+
+Full usage:
+usage: ./xgoldmon [-t <phone type>] [-l] [-v] <logfile or device>
+  -t: select 's2' or 's3' (default: 's3')
+  -l: print baseband log messages
+  -v: show debugging messages (more than once for more messages)
+
+In some situations, the phone might close the device, causing xgoldmon
+to exit. If you want to do some unsupervised logging, it might be a
+good idea to put the call to xgoldmon in a loop.
+
+
+Watching the radio messages in Wireshark
+========================================
+
+xgoldmon uses libosmocore to send the radio messages in GSMTAP format
+(http://bb.osmocom.org/trac/wiki/GSMTAP) to UDP port 4729 on the local
+host. In order to monitor the packages with Wireshark, something has
+to listen on that port, e.g.
+
+  nc -u -l 4729
+
+Then, in Wireshark, start a capture on the loopback interface. To see
+only the GSMTAP messages, set this filter:
+
+  udp.port==4729
+
+A word about UMTS: UMTS support in GSMTAP is still preliminary and so
+support for it is not yet included in Wireshark. You will see the
+GSMTAP messages in Wireshark, but they currently will not be
+decoded. I hope this will be resolved soon. For the time being, use
+GSM.
+
+
+Thanks
+======
+
+Many thanks to Harald Welte and GSMK Cryptophone for their support in
+making this tool!
