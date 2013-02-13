@@ -28,6 +28,7 @@ int dbglevel = 0;
 struct phone2ltable p2t[] =
   {
     { "s3", s3_ltable, READLOG_UNESCAPE },
+    { "note2", note2_ltable, READLOG_UNESCAPE },
     { "s2", s2_ltable, 0 },
   };
 
@@ -44,7 +45,7 @@ struct gsmtap_inst *init_gsmtap()
 void usage(char *cmdname)
 {
   printf("usage: %s [-t <phone type>] [-l] [-v] <logfile or device>\n"
-         "  -t: select 's2' or 's3' (default: '%s')\n"
+         "  -t: select 'note2', 's2', or 's3' (default: '%s')\n"
          "  -l: print baseband log messages\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);

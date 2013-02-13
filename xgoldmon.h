@@ -71,6 +71,7 @@ struct phone2ltable {
 
 #define READLOG_UNESCAPE 1
 
+extern struct rmsg_act note2_ltable[];
 extern struct rmsg_act s3_ltable[];
 extern struct rmsg_act s2_ltable[];
 extern struct phone2ltable p2t[];

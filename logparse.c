@@ -28,6 +28,25 @@ struct msgb *make_rrc_downlink_msg(uint8_t gsmtap_chan, uint8_t *msg_start, uint
 struct msgb *make_gsml2_msg(uint8_t gsmtap_chan, uint8_t *msg_start, uint16_t msg_len, uint8_t **dummy);
 struct msgb *register_search_msg(uint8_t dummy1, uint8_t *msg_start, uint16_t dummy2, uint8_t **searchmsg_p);
 
+struct rmsg_act note2_ltable[] =
+  {
+    { { 0x04, 0x01, 0x05,   -1 }, GSMTAP_UMTS_CH_DCCH,  28,  0, 26, make_rrc_uplink_msg },
+    { { 0x04, 0x01, 0x06,   -1 }, GSMTAP_UMTS_CH_DCCH,  24,  0, 22, make_rrc_uplink_msg },
+    { { 0x07, 0x01, 0x3f,   -1 }, GSMTAP_UMTS_CH_PCCH,  20,  0, 18, make_rrc_downlink_msg },
+    { { 0x08, 0x01, 0x59,   -1 }, GSMTAP_UMTS_CH_DCCH,  28,  0, 26, make_rrc_downlink_msg },
+    { { 0x08, 0x01, 0x5a,   -1 }, GSMTAP_UMTS_CH_DCCH,  24,  0, 22, make_rrc_downlink_msg },
+    { { 0x35,   -1, 0x0e,   -1 }, GSMTAP_CHANNEL_SDCCH, 31, 23,  0, make_gsml2_msg },
+    { { 0x0d, 0x04, 0x0f,   -1 }, GSMTAP_CHANNEL_SDCCH, 10, 23,  0, make_gsml2_msg },
+    { { 0x0d, 0x04, 0x04,   -1 }, 0,                    20,  0,  0, register_search_msg },
+    { { 0x0d, 0x02, 0x09,   -1 }, 0,                    24,  0,  0, register_search_msg },
+    { { 0x13,   -1,   -1, 0x06 }, GSMTAP_CHANNEL_BCCH,  18, 23,  0, make_gsml2_msg },
+    { { 0x13, 0x0b,   0x5f, -1 }, GSMTAP_CHANNEL_PCH,   18, 23,  0, make_gsml2_msg },
+    { { 0xf1, 0x01, 0x50,   -1 }, GSMTAP_CHANNEL_AGCH,  10, 23,  0, make_gsml2_msg },
+    { { 0x13,   -1,   -1, 0x05 }, GSMTAP_CHANNEL_AGCH,  18, 23,  0, make_gsml2_msg },
+    { { 0xf1, 0x01, 0x51,   -1 }, GSMTAP_CHANNEL_AGCH,  10, 23,  0, make_gsml2_msg },
+    { {   -1,   -1,   -1,   -1 }, 0,                     0,  0,  0, NULL },
+  };
+
 struct rmsg_act s3_ltable[] =
   {
     { { 0x04, 0x01, 0x05,   -1 }, GSMTAP_UMTS_CH_DCCH,  28,  0, 26, make_rrc_uplink_msg },
