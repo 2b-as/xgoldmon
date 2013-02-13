@@ -49,7 +49,7 @@ void usage(char *cmdname)
          "  -l: print baseband log messages\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);
-  exit(0);
+  exit(EXIT_SUCCESS);
 }
 
 void parse_cmdline(int argc, char *argv[],
@@ -94,7 +94,7 @@ void parse_cmdline(int argc, char *argv[],
   *logfile = fopen(argv[optind], "r");
   if(*logfile == NULL) {
     perror(NULL);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 }
 

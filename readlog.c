@@ -32,13 +32,13 @@ uint8_t read_byte(FILE *f)
   if(rc != 1) {
     if(feof(f)) {
       DBG(2, printf("** EOF\n"));
-      exit(0);
+      exit(EXIT_SUCCESS);
     }
     if(ferror(f)) {
       DBG(0, perror(NULL));
-      exit(1);
+      exit(EXIT_FAILURE);
     }
-    exit(0);
+    exit(EXIT_SUCCESS);
   }
 
   return byte;
