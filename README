@@ -8,8 +8,8 @@ them in e.g. Wireshark in realtime.
 This includes signalling for calls, SMS, USSD, paging for your and
 other phones and so on.
 
-Currently, it works for the Samsung Galaxy S3 GT-I9300 and Galaxy S2
-GT-I9100.
+Currently, it works for the Samsung Galaxy S3 GT-I9300, Galaxy S2
+GT-I9100 and Galaxy Note 2 GT-N7100.
 
 Patches for other devices or to decode more messages are very much
 welcome!
@@ -64,7 +64,7 @@ E.g.:
 
 Full usage:
 usage: ./xgoldmon [-t <phone type>] [-l] [-v] <logfile or device>
-  -t: select 's2' or 's3' (default: 's3')
+  -t: select 'note2', 's2', or 's3' (default: 's3')
   -l: print baseband log messages
   -v: show debugging messages (more than once for more messages)
 
@@ -106,3 +106,5 @@ Thanks
 
 Many thanks to Harald Welte and GSMK Cryptophone for their support in
 making this tool!
+
+Big thanks to Nico Gole (@iamnion) for adding support for the Note 2!
