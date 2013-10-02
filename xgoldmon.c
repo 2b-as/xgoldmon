@@ -45,10 +45,10 @@ struct gsmtap_inst *init_gsmtap(char * ip)
 
 void usage(char *cmdname)
 {
-  printf("usage: %s [-t <phone type>] [-l] [-v] <logfile or device>\n"
+  printf("usage: %s [-t <phone type>] [-i <ip.address>] [-l] [-v] <logfile or device>\n"
          "  -t: select 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
          "  -l: print baseband log messages\n"
-	 "  -i: direct gsmtap to given ip (localhot by default)\n"
+	 "  -i: direct gsmtap to given ip (localhost by default)\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);
   exit(EXIT_SUCCESS);
