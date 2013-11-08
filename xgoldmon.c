@@ -20,6 +20,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <termios.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "xgoldmon.h"
 
@@ -45,9 +48,10 @@ struct gsmtap_inst *init_gsmtap(char * ip)
 
 void usage(char *cmdname)
 {
-  printf("usage: %s [-t <phone type>] [-i <ip.address>] [-l] [-v] <logfile or device>\n"
+  printf("usage: %s [-t <phone type>] [-i <ip.address>] [-l] [-s] [-v] <logfile or device>\n"
          "  -t: select 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
          "  -l: print baseband log messages\n"
+	 "  -s: set serial line parameters\n"
 	 "  -i: direct gsmtap to given ip (localhost by default)\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);
@@ -57,14 +61,16 @@ void usage(char *cmdname)
 struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
                    int *printlog, struct phone2ltable **p2ltable, FILE **logfile)
 {
-  int ret, i = 0;
+  int ret, i = 0, set_mode = 0, fd;
   char *ip = NULL;
   extern char *optarg;
   extern int optind;
+  struct termios mode;
 
   *p2ltable = NULL;
+  bzero(&mode, sizeof(mode));
 
-  while((ret = getopt(argc, argv, "lvhi:t:")) != -1) {
+  while((ret = getopt(argc, argv, "lvshi:t:")) != -1) {
     switch(ret) {
     case 'l':
       *printlog = 1;
@@ -82,6 +88,9 @@ struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
       if(!*p2ltable)
         usage(argv[0]);
       break;
+    case 's':
+	set_mode = 1;
+	break;
     case 'i':
 	ip = strdup(optarg);
 	break;
@@ -97,11 +106,28 @@ struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
   if(argc <= optind)
     usage(argv[0]);
 
+  if(set_mode) { // set serial line parameters
+      fd = open(argv[optind], O_RDWR | O_NOCTTY | O_NONBLOCK);
+      if (fd < 0) {
+	  perror(argv[optind]);
+	  exit(EXIT_FAILURE);
+      }
+      cfmakeraw(&mode); // raw mode
+      cfsetspeed(&mode, B115200); // speed
+      mode.c_cflag = (mode.c_cflag & ~PARENB & ~CSIZE) | CS8; // pass8
+      mode.c_iflag &= ~ISTRIP;
+      ret = tcsetattr(fd, TCSANOW, &mode);
+      if (ret < 0)
+	  perror("tcsetattr failed, try manually set parameters:\nstty 115200 pass8 raw -noflsh -F /dev/ttyACM1");
+      close(fd);
+  }
+
   *logfile = fopen(argv[optind], "r");
   if(*logfile == NULL) {
     perror(argv[optind]);
     exit(EXIT_FAILURE);
   }
+
   return init_gsmtap(ip);
 }
 
