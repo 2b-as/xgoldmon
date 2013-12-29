@@ -49,8 +49,8 @@ To enable the logging mode ("diag mode") on the S2, S3 and Note2:
 The Galaxy Nexus has to be rooted first to activate diag mode! Then:
 - In the adb shell, as root, enter:
   echo MODEM > /sys/devices/tuna_otg/usb_sel
-- Connect to the first of the serial devices (e.g. /dev/ttyACM0) with
-  a terminal emulator and enter
+- Connect to the first of the serial devices with a terminal emulator
+  (for example "screen /dev/ttyACM0") and enter
   AT+TRACE=1
 
 When connecting the phone via USB to the computer, several new
@@ -58,11 +58,11 @@ pseudo-tty devices should be created. The one with the second lowest
 number should be the logging port. So for example on Linux, if you
 have no other ttyACM* devices, it should be /dev/ttyACM1.
 
-xgoldmon currently does not yet set any serial parameters on the
-device, so on Linux you might have to do that yourself with something
-like
+xgoldmon tries to set proper serial parameters on the device if "-s"
+option is specified
+If that fails, you might have to do that yourself with something like
 
-  stty 115200 pass8 raw -noflsh </dev/ttyACM1
+  stty 115200 pass8 raw -noflsh -F /dev/ttyACM1
 
 
 Running xgoldmon
@@ -73,9 +73,11 @@ E.g.:
   xgoldmon -t s3 -l /dev/ttyACM1
 
 Full usage:
-usage: ./xgoldmon [-t <phone type>] [-l] [-v] <logfile or device>
+usage: ./xgoldmon [-t <phone type>] [-l] [-s] [-v] <logfile or device>
   -t: select 's3', 'gnex', 's2' or 'note2' (default: 's3')
   -l: print baseband log messages
+  -s: set serial line parameters
+  -i: direct gsmtap to given ip (localhost by default)
   -v: show debugging messages (more than once for more messages)
 
 In some situations, the phone might close the device, causing xgoldmon

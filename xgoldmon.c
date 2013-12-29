@@ -18,8 +18,12 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
+#include <termios.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "xgoldmon.h"
 
@@ -33,36 +37,60 @@ struct phone2ltable p2t[] =
     { "s2", s2_ltable, 0 },
   };
 
-struct gsmtap_inst *init_gsmtap()
+struct gsmtap_inst *init_gsmtap(char * ip)
 {
   struct gsmtap_inst *gti;
 
-  gti = gsmtap_source_init("127.0.0.1", GSMTAP_UDP_PORT, 0);
+  gti = gsmtap_source_init(ip, GSMTAP_UDP_PORT, 0);
   gsmtap_source_add_sink(gti);  
-
+  free(ip);
   return gti;
 }
 
 void usage(char *cmdname)
 {
-  printf("usage: %s [-t <phone type>] [-l] [-v] <logfile or device>\n"
+  printf("usage: %s [-t <phone type>] [-i <ip.address>] [-l] [-s] [-v] <logfile or device>\n"
          "  -t: select 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
          "  -l: print baseband log messages\n"
+	 "  -s: set serial line parameters\n"
+	 "  -i: direct gsmtap to given ip (localhost by default)\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);
   exit(EXIT_SUCCESS);
 }
 
-void parse_cmdline(int argc, char *argv[],
+void check_n_perror(int value, const char * message) {
+  if (value >= 0) return;
+  perror(message);
+  exit(EXIT_FAILURE);
+}
+
+void set_serial_mode(const char *dev) {
+  struct termios mode;
+  bzero(&mode, sizeof(mode));
+  int fd = open(dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  check_n_perror(fd, dev);
+  cfmakeraw(&mode); // raw mode
+  cfsetspeed(&mode, B115200); // speed
+  mode.c_cflag = (mode.c_cflag & ~PARENB & ~CSIZE) | CS8; // pass8
+  mode.c_iflag &= ~ISTRIP;
+  int ret = tcsetattr(fd, TCSANOW, &mode);
+  check_n_perror(ret, "tcsetattr failed, try manually set parameters:\nstty 115200 pass8 raw -noflsh -F /dev/ttyACM1");
+  close(fd);
+}
+
+struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
                    int *printlog, struct phone2ltable **p2ltable, FILE **logfile)
 {
   int ret, i = 0;
+  char *ip = NULL;
+  bool set_mode = false;
   extern char *optarg;
   extern int optind;
 
   *p2ltable = NULL;
 
-  while((ret = getopt(argc, argv, "lvht:")) != -1) {
+  while((ret = getopt(argc, argv, "lvshi:t:")) != -1) {
     switch(ret) {
     case 'l':
       *printlog = 1;
@@ -80,6 +108,12 @@ void parse_cmdline(int argc, char *argv[],
       if(!*p2ltable)
         usage(argv[0]);
       break;
+    case 's':
+      set_mode = true;
+	break;
+    case 'i':
+	ip = strdup(optarg);
+	break;
     case 'h':
     default:
       usage(argv[0]);
@@ -92,11 +126,16 @@ void parse_cmdline(int argc, char *argv[],
   if(argc <= optind)
     usage(argv[0]);
 
+  if(set_mode)
+    set_serial_mode(argv[optind]);
+
   *logfile = fopen(argv[optind], "r");
   if(*logfile == NULL) {
-    perror(NULL);
+    perror(argv[optind]);
     exit(EXIT_FAILURE);
   }
+
+  return init_gsmtap(ip);
 }
 
 int main(int argc, char *argv[])
@@ -106,9 +145,7 @@ int main(int argc, char *argv[])
   FILE *f;
   struct gsmtap_inst *gti;
 
-  parse_cmdline(argc, argv, &printlog, &p2ltable, &f);
-
-  gti = init_gsmtap();
+  gti = parse_cmdline(argc, argv, &printlog, &p2ltable, &f);
 
   while(1)
     parse_logmsg(f, printlog, p2ltable, gti);
