@@ -49,8 +49,8 @@ To enable the logging mode ("diag mode") on the S2, S3 and Note2:
 The Galaxy Nexus has to be rooted first to activate diag mode! Then:
 - In the adb shell, as root, enter:
   echo MODEM > /sys/devices/tuna_otg/usb_sel
-- Connect to the first of the serial devices (e.g. /dev/ttyACM0) with
-  a terminal emulator and enter
+- Connect to the first of the serial devices with a terminal emulator
+  (for example "screen /dev/ttyACM0") and enter
   AT+TRACE=1
 
 When connecting the phone via USB to the computer, several new

@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <termios.h>
@@ -42,7 +43,7 @@ struct gsmtap_inst *init_gsmtap(char * ip)
 
   gti = gsmtap_source_init(ip, GSMTAP_UDP_PORT, 0);
   gsmtap_source_add_sink(gti);  
-
+  free(ip);
   return gti;
 }
 
@@ -58,17 +59,36 @@ void usage(char *cmdname)
   exit(EXIT_SUCCESS);
 }
 
+void check_n_perror(int value, const char * message) {
+  if (value >= 0) return;
+  perror(message);
+  exit(EXIT_FAILURE);
+}
+
+void set_serial_mode(const char *dev) {
+  struct termios mode;
+  bzero(&mode, sizeof(mode));
+  int fd = open(dev, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  check_n_perror(fd, dev);
+  cfmakeraw(&mode); // raw mode
+  cfsetspeed(&mode, B115200); // speed
+  mode.c_cflag = (mode.c_cflag & ~PARENB & ~CSIZE) | CS8; // pass8
+  mode.c_iflag &= ~ISTRIP;
+  int ret = tcsetattr(fd, TCSANOW, &mode);
+  check_n_perror(ret, "tcsetattr failed, try manually set parameters:\nstty 115200 pass8 raw -noflsh -F /dev/ttyACM1");
+  close(fd);
+}
+
 struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
                    int *printlog, struct phone2ltable **p2ltable, FILE **logfile)
 {
-  int ret, i = 0, set_mode = 0, fd;
+  int ret, i = 0;
   char *ip = NULL;
+  bool set_mode = false;
   extern char *optarg;
   extern int optind;
-  struct termios mode;
 
   *p2ltable = NULL;
-  bzero(&mode, sizeof(mode));
 
   while((ret = getopt(argc, argv, "lvshi:t:")) != -1) {
     switch(ret) {
@@ -89,7 +109,7 @@ struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
         usage(argv[0]);
       break;
     case 's':
-	set_mode = 1;
+      set_mode = true;
 	break;
     case 'i':
 	ip = strdup(optarg);
@@ -106,21 +126,8 @@ struct gsmtap_inst * parse_cmdline(int argc, char *argv[],
   if(argc <= optind)
     usage(argv[0]);
 
-  if(set_mode) { // set serial line parameters
-      fd = open(argv[optind], O_RDWR | O_NOCTTY | O_NONBLOCK);
-      if (fd < 0) {
-	  perror(argv[optind]);
-	  exit(EXIT_FAILURE);
-      }
-      cfmakeraw(&mode); // raw mode
-      cfsetspeed(&mode, B115200); // speed
-      mode.c_cflag = (mode.c_cflag & ~PARENB & ~CSIZE) | CS8; // pass8
-      mode.c_iflag &= ~ISTRIP;
-      ret = tcsetattr(fd, TCSANOW, &mode);
-      if (ret < 0)
-	  perror("tcsetattr failed, try manually set parameters:\nstty 115200 pass8 raw -noflsh -F /dev/ttyACM1");
-      close(fd);
-  }
+  if(set_mode)
+    set_serial_mode(argv[optind]);
 
   *logfile = fopen(argv[optind], "r");
   if(*logfile == NULL) {
