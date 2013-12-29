@@ -73,9 +73,10 @@ E.g.:
   xgoldmon -t s3 -l /dev/ttyACM1
 
 Full usage:
-usage: ./xgoldmon [-t <phone type>] [-l] [-v] <logfile or device>
+usage: ./xgoldmon [-t <phone type>] [-l] [-i <ip address>] [-v] <logfile or device>
   -t: select 's3', 'gnex', 's2' or 'note2' (default: 's3')
   -l: print baseband log messages
+  -i: send gsmtap packets to given ip address (default: 'localhost')
   -v: show debugging messages (more than once for more messages)
 
 In some situations, the phone might close the device, causing xgoldmon

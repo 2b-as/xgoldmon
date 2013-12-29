@@ -33,36 +33,41 @@ struct phone2ltable p2t[] =
     { "s2", s2_ltable, 0 },
   };
 
-struct gsmtap_inst *init_gsmtap()
+struct gsmtap_inst *init_gsmtap(char *ip_addr)
 {
   struct gsmtap_inst *gti;
 
-  gti = gsmtap_source_init("127.0.0.1", GSMTAP_UDP_PORT, 0);
-  gsmtap_source_add_sink(gti);  
+  gti = gsmtap_source_init(ip_addr, GSMTAP_UDP_PORT, 0);
+  gsmtap_source_add_sink(gti);
 
   return gti;
 }
 
 void usage(char *cmdname)
 {
-  printf("usage: %s [-t <phone type>] [-l] [-v] <logfile or device>\n"
+  printf("usage: %s [-t <phone type>] [-l] [-i <ip address>] [-v] <logfile or device>\n"
          "  -t: select 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
          "  -l: print baseband log messages\n"
+         "  -i: send gsmtap packets to given ip address (default: 'localhost')\n"
          "  -v: show debugging messages (more than once for more messages)\n",
          cmdname, p2t[0].ptype);
   exit(EXIT_SUCCESS);
 }
 
-void parse_cmdline(int argc, char *argv[],
-                   int *printlog, struct phone2ltable **p2ltable, FILE **logfile)
+struct gsmtap_inst *parse_cmdline(int argc, char *argv[],
+                                  int *printlog,
+                                  struct phone2ltable **p2ltable,
+                                  FILE **logfile)
 {
   int ret, i = 0;
+  char *ip_addr = NULL;
+  struct gsmtap_inst *gti;
   extern char *optarg;
   extern int optind;
 
   *p2ltable = NULL;
 
-  while((ret = getopt(argc, argv, "lvht:")) != -1) {
+  while((ret = getopt(argc, argv, "lvhi:t:")) != -1) {
     switch(ret) {
     case 'l':
       *printlog = 1;
@@ -80,6 +85,9 @@ void parse_cmdline(int argc, char *argv[],
       if(!*p2ltable)
         usage(argv[0]);
       break;
+    case 'i':
+      ip_addr = strdup(optarg);
+      break;
     case 'h':
     default:
       usage(argv[0]);
@@ -94,9 +102,15 @@ void parse_cmdline(int argc, char *argv[],
 
   *logfile = fopen(argv[optind], "r");
   if(*logfile == NULL) {
-    perror(NULL);
+    perror(argv[optind]);
     exit(EXIT_FAILURE);
   }
+
+  gti = init_gsmtap(ip_addr);
+
+  free(ip_addr);
+
+  return gti;
 }
 
 int main(int argc, char *argv[])
@@ -106,9 +120,7 @@ int main(int argc, char *argv[])
   FILE *f;
   struct gsmtap_inst *gti;
 
-  parse_cmdline(argc, argv, &printlog, &p2ltable, &f);
-
-  gti = init_gsmtap();
+  gti = parse_cmdline(argc, argv, &printlog, &p2ltable, &f);
 
   while(1)
     parse_logmsg(f, printlog, p2ltable, gti);
