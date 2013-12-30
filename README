@@ -9,6 +9,7 @@ This includes signalling for calls, SMS, USSD, paging for your and
 other phones and so on.
 
 Currently, these devices are supported:
+- Samsung Galaxy S4     GT-I9500 (this is the version without LTE!)
 - Samsung Galaxy S3     GT-I9300
 - Samsung Galaxy Nexus  GT-I9250 (has to be rooted!)
 - Samsung Galaxy S2     GT-I9100
@@ -74,7 +75,7 @@ E.g.:
 
 Full usage:
 usage: ./xgoldmon [-t <phone type>] [-l] [-s] [-i <ip address>] [-v] <logfile or device>
-  -t: select 's3', 'gnex', 's2' or 'note2' (default: 's3')
+  -t: select 's4', 's3', 'gnex', 's2' or 'note2' (default: 's3')
   -l: print baseband log messages
   -s: set proper serial device attributes
   -i: send gsmtap packets to given ip address (default: 'localhost')
@@ -123,3 +124,5 @@ Many thanks to...
 
 * Yan Grunenberger (@yangrunenberger) for finding out how to activate
   diag mode on the Galaxy Nexus
+
+* Max for adding options to set serial attributes and gsmtap ip address
