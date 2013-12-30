@@ -32,6 +32,7 @@ int dbglevel = 0;
 struct phone2ltable p2t[] =
   {
     { "s3", s3_ltable, READLOG_UNESCAPE },
+    { "s4", s3_ltable, READLOG_UNESCAPE },
     { "note2", note2_ltable, READLOG_UNESCAPE },
     { "gnex", s2_ltable, 0 },
     { "s2", s2_ltable, 0 },
@@ -50,7 +51,7 @@ struct gsmtap_inst *init_gsmtap(char *ip_addr)
 void usage(char *cmdname)
 {
   printf("usage: %s [-t <phone type>] [-l] [-s] [-i <ip address>] [-v] <logfile or device>\n"
-         "  -t: select 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
+         "  -t: select 's4', 's3', 'gnex', 's2' or 'note2' (default: '%s')\n"
          "  -l: print baseband log messages\n"
          "  -s: set proper serial device attributes\n"
          "  -i: send gsmtap packets to given ip address (default: 'localhost')\n"
